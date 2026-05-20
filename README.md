@@ -1,7 +1,7 @@
 # ⚡ FluxStudio — Free AI Image Generator
 
 [![Built with Pollinations](https://img.shields.io/badge/Built%20with-Pollinations.ai-8a2be2?style=for-the-badge)](https://pollinations.ai)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success?style=for-the-badge)](https://YOUR_USERNAME.github.io/fluxstudio)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-success?style=for-the-badge)](https://zizoisu.github.io/fluxstudio)
 
 A clean, fast, **100% free** AI image generator powered by [Pollinations.ai](https://pollinations.ai).  
 No sign-up. No API key. No limits. Just generate.
@@ -28,12 +28,12 @@ No installation. No dependencies. Pure HTML + vanilla JS.
 ## 🌐 Deployment (GitHub Pages)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/fluxstudio
+git clone https://github.com/zizoisu/fluxstudio
 cd fluxstudio
 # Enable GitHub Pages in repo Settings → Pages → Deploy from branch: main / root
 ```
 
-Your app will be live at `https://YOUR_USERNAME.github.io/fluxstudio`
+Your app will be live at `https://zizoisu.github.io/fluxstudio`
 
 ## 🔌 How it works
 
