@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FluxStudio — Free AI Image Generator</title>
+  <meta name="description" content="Generate stunning AI images instantly using Pollinations.ai. Free, no sign-up, no limits. Powered by Flux, Stable Diffusion and more." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d0d10;
+      --surface:  #16161d;
+      --border:   #2a2a38;
+      --accent:   #7c6af7;
+      --accent2:  #c084fc;
+      --text:     #e8e8f0;
+      --muted:    #6b6b80;
+      --success:  #34d399;
+      --radius:   14px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 18px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      background: rgba(13,13,16,0.85);
+      z-index: 10;
+    }
+    .logo {
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .badge {
+      font-size: 0.72rem;
+      background: rgba(124,106,247,0.18);
+      border: 1px solid rgba(124,106,247,0.4);
+      color: var(--accent2);
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      flex: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 36px 20px 60px;
+    }
+
+    h1 {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+    .sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 36px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    /* ── PROMPT BOX ── */
+    .prompt-wrap {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    textarea {
+      flex: 1;
+      min-width: 220px;
+      min-height: 80px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.97rem;
+      padding: 12px 14px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    textarea:focus { border-color: var(--accent); }
+    textarea::placeholder { color: var(--muted); }
+
+    /* ── CONTROLS ROW ── */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+      align-items: flex-end;
+    }
+    .ctrl-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    select, input[type=number] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    select:focus, input[type=number]:focus { border-color: var(--accent); }
+    input[type=number] { width: 90px; }
+
+    /* ── ASPECT RATIO PILLS ── */
+    .ratios {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .ratio-btn {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .ratio-btn:hover { border-color: var(--accent); color: var(--text); }
+    .ratio-btn.active {
+      background: rgba(124,106,247,0.15);
+      border-color: var(--accent);
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* ── GENERATE BUTTON ── */
+    .btn-generate {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 12px 32px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      white-space: nowrap;
+      font-family: inherit;
+      margin-left: auto;
+    }
+    .btn-generate:hover { opacity: 0.88; }
+    .btn-generate:active { transform: scale(0.97); }
+    .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ── ENHANCE TOGGLE ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .toggle {
+      width: 36px; height: 20px;
+      background: var(--border);
+      border-radius: 99px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+      outline: none;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 99px;
+      transition: left 0.2s;
+    }
+    .toggle.on::after { left: 19px; }
+    .toggle-label { font-size: 0.88rem; color: var(--muted); }
+
+    /* ── OUTPUT AREA ── */
+    #output {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      min-height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+    #output img {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: var(--radius);
+    }
+    .placeholder-msg {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px 20px;
+    }
+    .placeholder-msg .icon { font-size: 3rem; margin-bottom: 12px; }
+    .placeholder-msg p { font-size: 0.95rem; }
+
+    /* ── SPINNER ── */
+    .spinner-wrap {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 60px 20px;
+    }
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-label { color: var(--muted); font-size: 0.9rem; }
+
+    /* ── ACTION BAR ── */
+    .action-bar {
+      display: none;
+      gap: 10px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .btn-action {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-size: 0.88rem;
+      padding: 9px 18px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-action:hover { border-color: var(--accent); color: var(--accent2); }
+
+    /* ── GALLERY ── */
+    #gallery-section { display: none; }
+    .gallery-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+    }
+    .gallery-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, transform 0.15s;
+    }
+    .gallery-item:hover { border-color: var(--accent); transform: scale(1.02); }
+    .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .gallery-item .dl-btn {
+      position: absolute;
+      bottom: 6px; right: 6px;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      border-radius: 6px;
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .gallery-item:hover .dl-btn { opacity: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      color: var(--text);
+      font-size: 0.88rem;
+      padding: 10px 22px;
+      transition: transform 0.3s ease;
+      z-index: 100;
+      white-space: nowrap;
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 500px) {
+      .btn-generate { width: 100%; margin-left: 0; }
+      .controls { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡ FluxStudio</div>
+  <div class="badge">Powered by Pollinations.ai</div>
+</header>
+
+<main>
+  <h1>AI Image Generator</h1>
+  <p class="sub">Free · No sign-up · Unlimited generations · Powered by Flux & more</p>
+
+  <div class="card">
+    <div class="prompt-wrap">
+      <textarea id="prompt" placeholder="Describe the image you want… e.g. a neon-lit cyberpunk street at night, rain reflections, cinematic, 8K" rows="3"></textarea>
+    </div>
+
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>Model</label>
+        <select id="model">
+          <option value="flux">Flux (default)</option>
+          <option value="flux-realism">Flux Realism</option>
+          <option value="flux-anime">Flux Anime</option>
+          <option value="flux-3d">Flux 3D</option>
+          <option value="flux-pro">Flux Pro</option>
+          <option value="turbo">Turbo (fast)</option>
+          <option value="gptimage">GPT Image</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Aspect Ratio</label>
+        <div class="ratios">
+          <button class="ratio-btn active" data-w="1024" data-h="1024">1:1</button>
+          <button class="ratio-btn" data-w="1280" data-h="720">16:9</button>
+          <button class="ratio-btn" data-w="720" data-h="1280">9:16</button>
+          <button class="ratio-btn" data-w="1536" data-h="640">3:1</button>
+          <button class="ratio-btn" data-w="1080" data-h="1350">4:5</button>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Seed</label>
+        <input type="number" id="seed" placeholder="random" min="0" max="9999999" />
+      </div>
+
+      <button class="btn-generate" id="genBtn" onclick="generate()">✨ Generate</button>
+    </div>
+
+    <div class="toggle-row">
+      <button class="toggle on" id="enhanceToggle" onclick="toggleEnhance()"></button>
+      <span class="toggle-label">Prompt enhance — AI will improve your prompt automatically</span>
+    </div>
+  </div>
+
+  <div id="output">
+    <div class="placeholder-msg" id="placeholder">
+      <div class="icon">🎨</div>
+      <p>Your image will appear here.<br>Type a prompt and hit Generate.</p>
+    </div>
+    <div class="spinner-wrap" id="spinner">
+      <div class="spinner"></div>
+      <div class="spinner-label" id="spinner-label">Generating your image…</div>
+    </div>
+    <img id="result-img" style="display:none" alt="Generated image" />
+  </div>
+
+  <div class="action-bar" id="actionBar">
+    <button class="btn-action" onclick="downloadImage()">⬇️ Download</button>
+    <button class="btn-action" onclick="copyPrompt()">📋 Copy Prompt</button>
+    <button class="btn-action" onclick="copyUrl()">🔗 Copy Image URL</button>
+    <button class="btn-action" onclick="randomSeed()">🎲 New Seed</button>
+    <button class="btn-action" onclick="generate()">🔁 Regenerate</button>
+  </div>
+
+  <div id="gallery-section">
+    <div class="gallery-title">🖼️ This Session</div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</main>
+
+<footer>
+  Built with ❤️ using <a href="https://pollinations.ai" target="_blank" rel="noopener">Pollinations.ai</a> — 100% free, open source AI generation.
+  &nbsp;·&nbsp;
+  <a href="https://github.com/pollinations/pollinations" target="_blank" rel="noopener">GitHub</a>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────
+  let currentUrl = '';
+  let currentPrompt = '';
+  let enhanceOn = true;
+  let selectedW = 1024;
+  let selectedH = 1024;
+  const gallery = [];
+
+  // ── Ratio pills ────────────────────────────────────────────
+  document.querySelectorAll('.ratio-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ratio-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedW = parseInt(btn.dataset.w);
+      selectedH = parseInt(btn.dataset.h);
+    });
+  });
+
+  // ── Enhance toggle ─────────────────────────────────────────
+  function toggleEnhance() {
+    enhanceOn = !enhanceOn;
+    document.getElementById('enhanceToggle').classList.toggle('on', enhanceOn);
+  }
+
+  // ── Random seed ────────────────────────────────────────────
+  function randomSeed() {
+    document.getElementById('seed').value = Math.floor(Math.random() * 9999999);
+  }
+
+  // ── Build image URL ────────────────────────────────────────
+  function buildUrl(prompt) {
+    const model   = document.getElementById('model').value;
+    const seedVal = document.getElementById('seed').value;
+    const seed    = seedVal !== '' ? parseInt(seedVal) : Math.floor(Math.random() * 9999999);
+    const enhance = enhanceOn ? 'true' : 'false';
+    const encoded = encodeURIComponent(prompt);
+    return `https://image.pollinations.ai/prompt/${encoded}?model=${model}&width=${selectedW}&height=${selectedH}&seed=${seed}&enhance=${enhance}&nologo=true`;
+  }
+
+  // ── Generate ───────────────────────────────────────────────
+  async function generate() {
+    const prompt = document.getElementById('prompt').value.trim();
+    if (!prompt) { showToast('⚠️ Please enter a prompt'); return; }
+
+    currentPrompt = prompt;
+    const url = buildUrl(prompt);
+    currentUrl = url;
+
+    setLoading(true);
+    document.getElementById('actionBar').style.display = 'none';
+
+    const img = new Image();
+    img.onload = () => {
+      setLoading(false);
+      showResult(img.src);
+      addToGallery(img.src, prompt);
+    };
+    img.onerror = () => {
+      setLoading(false);
+      showToast('❌ Generation failed — try a different prompt or model');
+      document.getElementById('placeholder').style.display = 'flex';
+    };
+
+    // Animate label
+    const labels = ['Generating your image…', 'Running AI inference…', 'Painting pixels…', 'Almost there…'];
+    let li = 0;
+    const labelEl = document.getElementById('spinner-label');
+    const labInterval = setInterval(() => {
+      li = (li + 1) % labels.length;
+      labelEl.textContent = labels[li];
+    }, 2000);
+    img._labInterval = labInterval;
+    img.src = url;
+  }
+
+  // ── UI helpers ─────────────────────────────────────────────
+  function setLoading(on) {
+    document.getElementById('spinner').style.display = on ? 'flex' : 'none';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('result-img').style.display = 'none';
+    document.getElementById('genBtn').disabled = on;
+    if (!on) clearInterval(document.querySelector('img._labInterval'));
+  }
+
+  function showResult(src) {
+    const el = document.getElementById('result-img');
+    el.src = src;
+    el.style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('actionBar').style.display = 'flex';
+  }
+
+  // ── Gallery ────────────────────────────────────────────────
+  function addToGallery(src, prompt) {
+    gallery.unshift({ src, prompt });
+    const sec = document.getElementById('gallery-section');
+    sec.style.display = 'block';
+    const grid = document.getElementById('gallery');
+    const item = document.createElement('div');
+    item.className = 'gallery-item';
+    item.innerHTML = `
+      <img src="${src}" alt="${escHtml(prompt)}" loading="lazy" onclick="viewGalleryItem('${src}')" />
+      <button class="dl-btn" onclick="event.stopPropagation(); dlFrom('${src}', '${escHtml(prompt).slice(0,30)}')">⬇️</button>
+    `;
+    grid.prepend(item);
+  }
+
+  function viewGalleryItem(src) {
+    const el = document.getElementById('result-img');
+    el.src = src;
+    el.style.display = 'block';
+    document.getElementById('placeholder').style.display = 'none';
+    document.getElementById('actionBar').style.display = 'flex';
+    currentUrl = src;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Actions ────────────────────────────────────────────────
+  function downloadImage() { dlFrom(currentUrl, currentPrompt.slice(0, 40)); }
+
+  function dlFrom(url, name) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fluxstudio-${name.replace(/\s+/g,'-')}.jpg`;
+    a.target = '_blank';
+    a.click();
+    showToast('⬇️ Downloading…');
+  }
+
+  function copyPrompt() {
+    navigator.clipboard.writeText(currentPrompt).then(() => showToast('📋 Prompt copied!'));
+  }
+
+  function copyUrl() {
+    navigator.clipboard.writeText(currentUrl).then(() => showToast('🔗 URL copied!'));
+  }
+
+  // ── Toast ──────────────────────────────────────────────────
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  // ── Utils ──────────────────────────────────────────────────
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Enter key to generate ──────────────────────────────────
+  document.getElementById('prompt').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate();
+  });
+</script>
+
+</body>
+</html>
